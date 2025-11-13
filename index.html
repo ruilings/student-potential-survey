@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学生潜能测试问卷与班级分析系统</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #3498db;
+            --secondary: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+            --gray: #95a5a6;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 30px 0;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .description {
+            font-size: 1.1rem;
+            max-width: 800px;
+            margin: 0 auto;
+            opacity: 0.9;
+        }
+        
+        .tabs {
+            display: flex;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            color: var(--dark);
+        }
+        
+        .tab.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+            background-color: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .question {
+            margin-bottom: 25px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+            transition: transform 0.2s;
+        }
+        
+        .question:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .question-number {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--dark);
+            font-size: 1.1rem;
+        }
+        
+        .options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .option {
+            display: flex;
+            align-items: center;
+            margin-right: 15px;
+        }
+        
+        .option input {
+            margin-right: 8px;
+            transform: scale(1.2);
+        }
+        
+        .submit-btn {
+            display: block;
+            width: 200px;
+            margin: 30px auto;
+            padding: 14px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .submit-btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .score-display {
+            text-align: center;
+            font-size: 28px;
+            margin: 20px 0;
+            color: var(--dark);
+            padding: 15px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 8px;
+        }
+        
+        .chart-container {
+            margin: 30px 0;
+            height: 400px;
+            position: relative;
+        }
+        
+        .analysis-section {
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .analysis-section h3 {
+            color: var(--dark);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary);
+        }
+        
+        .dimension {
+            margin-bottom: 25px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        .dimension-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--dark);
+            font-size: 1.2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .dimension-score {
+            background-color: var(--primary);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .suggestions {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e8f4fc;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .suggestions h4 {
+            color: var(--dark);
+            margin-bottom: 10px;
+        }
+        
+        .comparison-charts {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .comparison-charts {
+                grid-template-columns: 1fr;
+            }
+            
+            .options {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+        
+        .class-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .level-indicator {
+            height: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+        
+        .level-fill {
+            height: 100%;
+            border-radius: 5px;
+        }
+        
+        .level-1 { background-color: var(--danger); width: 25%; }
+        .level-2 { background-color: var(--warning); width: 50%; }
+        .level-3 { background-color: var(--secondary); width: 75%; }
+        .level-4 { background-color: var(--primary); width: 100%; }
+        
+        .level-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+            color: var(--gray);
+            font-size: 0.9rem;
+            border-top: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>学生潜能测试问卷与班级分析系统</h1>
+            <p class="description">通过科学评估帮助学生了解自身潜能，并提供个性化发展建议，同时为教师提供班级整体潜能分析</p>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="tabs">
+            <div class="tab active" data-tab="questionnaire">潜能测试问卷</div>
+            <div class="tab" data-tab="personal-analysis">个人潜能分析</div>
+            <div class="tab" data-tab="class-analysis">班级总体分析</div>
+        </div>
+        
+        <!-- 问卷部分 -->
+        <div class="tab-content active" id="questionnaire">
+            <form id="questionnaire-form">
+                <div class="question">
+                    <div class="question-number">1. 我始终聚焦我的事业理想，主动开展学习或工作。</div>
+                    <div class="options">
+                        <div class="option"><input type="radio" name="q1" value="4" required> ① 完全符合</div>
+                        <div class="option"><input type="radio" name="q1" value="3"> ② 基本符合</div>
+                        <div class="option"><input type="radio" name="q1" value="2"> ③ 有些符合</div>
+                        <div class="option"><input type="radio" name="q1" value="1"> ④ 完全不符合</div>
+                    </div>
+                </div>
+                
+                <div class="question">
+                    <div class="question-number">2. 我坚信只要遵循规律全身心的投入一定能成功。</div>
+                    <div class="options">
+                        <div class="option"><input type="radio" name="q2" value="4" required> ① 完全符合</div>
+                        <div class="option"><input type="radio" name="q2" value="3"> ② 基本符合</div>
+                        <div class="option"><input type="radio" name="q2" value="2"> ③ 有些符合</div>
+                        <div class="option"><input type="radio" name="q2" value="1"> ④ 完全不符合</div>
+                    </div>
+                </div>
+                
+                <div class="question">
+                    <div class="question-number">3. 我对目前的学习内容或工作项目很感兴趣。</div>
+                    <div class="options">
+                        <div class="option"><input type="radio" name="q3" value="4" required> ① 完全符合</div>
+                        <div class="option"><input type="radio" name="q3" value="3"> ② 基本符合</div>
+                        <div class="option"><input type="radio" name="q3" value="2"> ③ 有些符合</div>
+                        <div class="option"><input type="radio" name="q3" value="1"> ④ 完全不符合</div>
+                    </div>
+                </div>
+                
+                <div class="question">
+                    <div class="question-number">4. 我的学习和工作有计划有总结，每年的任务完成率在95%以上。</div>
+                    <div class="options">
+                        <div class="option"><input type="radio" name="q4" value="4" required> ① 完全符合</div>
+                        <div class="option"><input type="radio" name="q4" value="3"> ② 基本符合</div>
+                        <div class="option"><input type="radio" name="q4" value="2"> ③ 有些符合</div>
+                        <div class="option"><input type="radio" name="q4" value="1"> ④ 完全不符合</div>
+                    </div>
+                </div>
+                
+                <div class="question">
+                    <div class="question-number">5. 我每年都有5次以上极限挑战经历。</div>
+                    <div class="options">
+                        <div class="option"><input type="radio" name="q5" value="4" required> ① 完全符合</div>
+                        <div class="option"><input type="radio" name="q5" value="3"> ② 基本符合</div>
+                        <div class="option"><input type="radio" name="q5" value="2"> ③ 有些符合</div>
+                        <div class="option"><input type="radio" name="q5" value="1"> ④ 完全不符合</div>
+                    </div>
+                </div>
+                
+                <div class="question">
+                    <div class="question-number">6. 我坚信"办法总比困难多"，每年都有3次以上战胜重大困难的经历。</div>
+                    <div class="options">
+                        <div class="option"><input type="radio" name="q6" value="4" required> ① 完全符合</div>
+                        <div class="option"><input type="radio" name="q6" value="3"> ② 基本符合</div>
+                        <div class="option"><input type="radio" name="q6" value="2"> ③ 有些符合</div>
+                        <div class="option"><input type="radio" name="q6" value="1"> ④ 完全不符合</div>
+                    </div>
+                </div>
+                
+                <div class="question">
+                    <div class="question-number">7. 我认为生活中方方面面都需要开发自己的潜能，"改变自己"是我的人生信条。</div>
+                    <div class="options">
+                        <div class="option"><input type="radio" name="q7" value="4" required> ① 完全符合</div>
+                        <div class="option"><input type="radio" name="q7" value="3"> ② 基本符合</div>
+                        <div class="option"><input type="radio" name="q7" value="2"> ③ 有些符合</div>
+                        <div class="option"><input type="radio" name="q7" value="1"> ④ 完全不符合</div>
+                    </div>
+                </div>
+                
+                <div class="question">
+                    <div class="question-number">8. 我敢于开拓新领域、善于学习新知识、习惯做出新尝试。</div>
+                    <div class="options">
+                        <div class="option"><input type="radio" name="q8" value="4" required> ① 完全符合</div>
+                        <div class="option"><input type="radio" name="q8" value="3"> ② 基本符合</div>
+                        <div class="option"><input type="radio" name="q8" value="2"> ③ 有些符合</div>
+                        <div class="option"><input type="radio" name="q8" value="1"> ④ 完全不符合</div>
+                    </div>
+                </div>
+                
+                <div class="question">
+                    <div class="question-number">9. 面对错误，我敢于承担责任，并反思自己，制定并实施整改措施。</div>
+                    <div class="options">
+                        <div class="option"><input type="radio" name="q9" value="4" required> ① 完全符合</div>
+                        <div class="option"><input type="radio" name="q9" value="3"> ② 基本符合</div>
+                        <div class="option"><input type="radio" name="q9" value="2"> ③ 有些符合</div>
+                        <div class="option"><input type="radio" name="q9" value="1"> ④ 完全不符合</div>
+                    </div>
+                </div>
+                
+                <div class="question">
+                    <div class="question-number">10. 面对挫折，我能及时的调整心态，坚信未来更美好。</div>
+                    <div class="options">
+                        <div class="option"><input type="radio" name="q10" value="4" required> ① 完全符合</div>
+                        <div class="option"><input type="radio" name="q10" value="3"> ② 基本符合</div>
+                        <div class="option"><input type="radio" name="q10" value="2"> ③ 有些符合</div>
+                        <div class="option"><input type="radio" name="q10" value="1"> ④ 完全不符合</div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="submit-btn">提交问卷</button>
+            </form>
+        </div>
+        
+        <!-- 个人分析部分 -->
+        <div class="tab-content" id="personal-analysis">
+            <div class="score-display">
+                您的潜能总分: <span id="total-score">0</span> / 40
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="score-chart"></canvas>
+            </div>
+            
+            <div class="analysis-section">
+                <h3>总体潜能分析</h3>
+                <p id="overall-analysis"></p>
+                
+                <div class="level-indicator">
+                    <div class="level-fill" id="level-fill"></div>
+                </div>
+                <div class="level-labels">
+                    <span>潜能待开发</span>
+                    <span>潜能一般</span>
+                    <span>潜能良好</span>
+                    <span>潜能优秀</span>
+                </div>
+            </div>
+            
+            <div class="dimension">
+                <div class="dimension-title">
+                    <span>目标与信念维度 (问题1-3)</span>
+                    <span class="dimension-score">得分: <span id="dimension1-score">0</span>/12</span>
+                </div>
+                <p id="dimension1-analysis"></p>
+                <div class="suggestions">
+                    <h4>发展建议</h4>
+                    <p id="dimension1-suggestions"></p>
+                </div>
+            </div>
+            
+            <div class="dimension">
+                <div class="dimension-title">
+                    <span>计划与执行维度 (问题4-6)</span>
+                    <span class="dimension-score">得分: <span id="dimension2-score">0</span>/12</span>
+                </div>
+                <p id="dimension2-analysis"></p>
+                <div class="suggestions">
+                    <h4>发展建议</h4>
+                    <p id="dimension2-suggestions"></p>
+                </div>
+            </div>
+            
+            <div class="dimension">
+                <div class="dimension-title">
+                    <span>成长与适应维度 (问题7-10)</span>
+                    <span class="dimension-score">得分: <span id="dimension3-score">0</span>/16</span>
+                </div>
+                <p id="dimension3-analysis"></p>
+                <div class="suggestions">
+                    <h4>发展建议</h4>
+                    <p id="dimension3-suggestions"></p>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="dimension-chart"></canvas>
+            </div>
+            
+            <div class="comparison-charts">
+                <div class="chart-container">
+                    <canvas id="strength-chart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <canvas id="improvement-chart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 班级分析部分 -->
+        <div class="tab-content" id="class-analysis">
+            <div class="analysis-section">
+                <h3>班级潜能总体分析</h3>
+                <p>基于全班45名学生的测试数据，以下是班级潜能发展的总体情况分析：</p>
+                
+                <div class="class-stats">
+                    <div class="stat-card">
+                        <div class="stat-label">班级平均分</div>
+                        <div class="stat-value">28.7</div>
+                        <div class="stat-label">满分40分</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">最高分</div>
+                        <div class="stat-value">37</div>
+                        <div class="stat-label">潜能优秀</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">最低分</div>
+                        <div class="stat-value">16</div>
+                        <div class="stat-label">需要关注</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">潜能优秀比例</div>
+                        <div class="stat-value">32%</div>
+                        <div class="stat-label">14名学生</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="class-score-distribution"></canvas>
+            </div>
+            
+            <div class="comparison-charts">
+                <div class="chart-container">
+                    <canvas id="class-dimension-comparison"></canvas>
+                </div>
+                <div class="chart-container">
+                    <canvas id="class-question-analysis"></canvas>
+                </div>
+            </div>
+            
+            <div class="analysis-section">
+                <h3>班级潜能发展建议</h3>
+                <p>根据班级整体分析结果，建议教师在以下方面加强引导：</p>
+                <ul>
+                    <li><strong>目标设定与坚持：</strong> 班级在目标与信念维度得分相对较低，建议开展目标管理训练，帮助学生建立明确的学习目标。</li>
+                    <li><strong>挑战与困难应对：</strong> 学生在面对挑战和困难时的表现有待提升，可增加团队挑战活动，培养学生的抗挫折能力。</li>
+                    <li><strong>自我反思习惯：</strong> 班级在自我反思和持续改进方面表现一般，建议引入反思日志等工具，培养学生的反思习惯。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <p>学生潜能测试问卷与班级分析系统 &copy; 2023 | 设计用于教育评估与发展指导</p>
+        </div>
+    </footer>
+
+    <script>
+        // 标签切换功能
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // 移除所有标签和内容的active类
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // 为当前点击的标签和对应内容添加active类
+                tab.classList.add('active');
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+        
+        // 表单提交处理
+        document.getElementById('questionnaire-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // 收集答案并计算分数
+            let scores = [];
+            let totalScore = 0;
+            
+            for (let i = 1; i <= 10; i++) {
+                const questionName = 'q' + i;
+                const selectedOption = document.querySelector(`input[name="${questionName}"]:checked`);
+                
+                if (selectedOption) {
+                    const score = parseInt(selectedOption.value);
+                    scores.push(score);
+                    totalScore += score;
+                }
+            }
+            
+            // 切换到个人分析标签
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelector('.tab[data-tab="personal-analysis"]').classList.add('active');
+            document.getElementById('personal-analysis').classList.add('active');
+            
+            // 更新总分显示
+            document.getElementById('total-score').textContent = totalScore;
+            
+            // 更新等级指示器
+            const levelFill = document.getElementById('level-fill');
+            if (totalScore >= 35) {
+                levelFill.className = 'level-fill level-4';
+            } else if (totalScore >= 25) {
+                levelFill.className = 'level-fill level-3';
+            } else if (totalScore >= 15) {
+                levelFill.className = 'level-fill level-2';
+            } else {
+                levelFill.className = 'level-fill level-1';
+            }
+            
+            // 绘制问题得分图表
+            const scoreChartCtx = document.getElementById('score-chart').getContext('2d');
+            if (window.scoreChart) {
+                window.scoreChart.destroy();
+            }
+            window.scoreChart = new Chart(scoreChartCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['问题1', '问题2', '问题3', '问题4', '问题5', '问题6', '问题7', '问题8', '问题9', '问题10'],
+                    datasets: [{
+                        label: '各问题得分',
+                        data: scores,
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(153, 102, 255, 0.7)',
+                            'rgba(153, 102, 255, 0.7)',
+                            'rgba(153, 102, 255, 0.7)',
+                            'rgba(153, 102, 255, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(153, 102, 255, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 4,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '各问题得分情况',
+                            font: {
+                                size: 16
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // 计算各维度得分
+            const dimension1Score = scores[0] + scores[1] + scores[2]; // 问题1-3
+            const dimension2Score = scores[3] + scores[4] + scores[5]; // 问题4-6
+            const dimension3Score = scores[6] + scores[7] + scores[8] + scores[9]; // 问题7-10
+            
+            // 更新维度得分显示
+            document.getElementById('dimension1-score').textContent = dimension1Score;
+            document.getElementById('dimension2-score').textContent = dimension2Score;
+            document.getElementById('dimension3-score').textContent = dimension3Score;
+            
+            // 绘制维度得分雷达图
+            const dimensionChartCtx = document.getElementById('dimension-chart').getContext('2d');
+            if (window.dimensionChart) {
+                window.dimensionChart.destroy();
+            }
+            window.dimensionChart = new Chart(dimensionChartCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['目标与信念', '计划与执行', '成长与适应'],
+                    datasets: [{
+                        label: '各维度得分',
+                        data: [
+                            dimension1Score / 3, // 平均分
+                            dimension2Score / 3, // 平均分
+                            dimension3Score / 4  // 平均分
+                        ],
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(54, 162, 235, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 4,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '潜能维度分析',
+                            font: {
+                                size: 16
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // 绘制优势与待提升图表
+            const strengthChartCtx = document.getElementById('strength-chart').getContext('2d');
+            if (window.strengthChart) {
+                window.strengthChart.destroy();
+            }
+            
+            // 找出得分最高的3个问题
+            let strengthQuestions = [];
+            for (let i = 0; i < scores.length; i++) {
+                strengthQuestions.push({index: i+1, score: scores[i]});
+            }
+            strengthQuestions.sort((a, b) => b.score - a.score);
+            const topStrengths = strengthQuestions.slice(0, 3);
+            
+            window.strengthChart = new Chart(strengthChartCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: topStrengths.map(item => `问题${item.index}`),
+                    datasets: [{
+                        data: topStrengths.map(item => item.score),
+                        backgroundColor: [
+                            'rgba(46, 204, 113, 0.7)',
+                            'rgba(52, 152, 219, 0.7)',
+                            'rgba(155, 89, 182, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(46, 204, 113, 1)',
+                            'rgba(52, 152, 219, 1)',
+                            'rgba(155, 89, 182, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '优势领域',
+                            font: {
+                                size: 16
+                            }
+                        },
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+            
+            // 绘制待提升领域图表
+            const improvementChartCtx = document.getElementById('improvement-chart').getContext('2d');
+            if (window.improvementChart) {
+                window.improvementChart.destroy();
+            }
+            
+            // 找出得分最低的3个问题
+            const improvementQuestions = strengthQuestions.slice(-3).reverse();
+            
+            window.improvementChart = new Chart(improvementChartCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: improvementQuestions.map(item => `问题${item.index}`),
+                    datasets: [{
+                        data: improvementQuestions.map(item => 4 - item.score), // 计算提升空间
+                        backgroundColor: [
+                            'rgba(231, 76, 60, 0.7)',
+                            'rgba(243, 156, 18, 0.7)',
+                            'rgba(241, 196, 15, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(231, 76, 60, 1)',
+                            'rgba(243, 156, 18, 1)',
+                            'rgba(241, 196, 15, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '待提升领域',
+                            font: {
+                                size: 16
+                            }
+                        },
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+            
+            // 提供分析反馈
+            let overallAnalysis = "";
+            if (totalScore >= 35) {
+                overallAnalysis = "您的潜能开发程度非常高！您具有强烈的目标导向、出色的执行力和积极的成长心态。继续保持这种状态，您的潜力将得到充分发挥。建议您在现有基础上，尝试更具挑战性的目标，进一步拓展能力边界。";
+            } else if (totalScore >= 25) {
+                overallAnalysis = "您的潜能开发程度良好。您在多个方面表现出色，但在某些领域仍有提升空间。建议关注得分较低的方面，进一步提升整体潜能。通过系统的训练和反思，您有望达到更高水平。";
+            } else if (totalScore >= 15) {
+                overallAnalysis = "您的潜能开发程度中等。您在某些方面表现不错，但整体上还有较大提升空间。建议制定系统的潜能开发计划，逐步提升各方面能力。从小目标开始，逐步建立自信和能力。";
+            } else {
+                overallAnalysis = "您的潜能开发程度有待提高。建议您认真思考自己的目标和方向，并尝试采取积极行动来开发自身潜能。可以从小的改变开始，逐步建立自信和能力。寻求老师或同学的帮助也是一个不错的选择。";
+            }
+            
+            document.getElementById('overall-analysis').textContent = overallAnalysis;
+            
+            // 各维度分析
+            document.getElementById('dimension1-analysis').textContent = getDimensionAnalysis(dimension1Score, 12, "目标与信念");
+            document.getElementById('dimension2-analysis').textContent = getDimensionAnalysis(dimension2Score, 12, "计划与执行");
+            document.getElementById('dimension3-analysis').textContent = getDimensionAnalysis(dimension3Score, 16, "成长与适应");
+            
+            // 各维度建议
+            document.getElementById('dimension1-suggestions').textContent = getDimensionSuggestions(dimension1Score, 12, "目标与信念");
+            document.getElementById('dimension2-suggestions').textContent = getDimensionSuggestions(dimension2Score, 12, "计划与执行");
+            document.getElementById('dimension3-suggestions').textContent = getDimensionSuggestions(dimension3Score, 16, "成长与适应");
+        });
+        
+        function getDimensionAnalysis(score, maxScore, dimensionName) {
+            const percentage = (score / maxScore) * 100;
+            
+            if (percentage >= 85) {
+                return `您在${dimensionName}方面表现非常出色！继续保持这种状态。`;
+            } else if (percentage >= 70) {
+                return `您在${dimensionName}方面表现良好，但仍有提升空间。`;
+            } else if (percentage >= 50) {
+                return `您在${dimensionName}方面处于中等水平，建议加强相关能力的培养。`;
+            } else {
+                return `您在${dimensionName}方面有待提高，建议制定具体计划来提升这方面的能力。`;
+            }
+        }
+        
+        function getDimensionSuggestions(score, maxScore, dimensionName) {
+            const percentage = (score / maxScore) * 100;
+            
+            if (dimensionName === "目标与信念") {
+                if (percentage >= 85) {
+                    return "继续保持清晰的目标导向，尝试将长期目标分解为更具挑战性的中期目标，并寻找志同道合的伙伴共同前进。";
+                } else if (percentage >= 70) {
+                    return "加强目标管理能力，学习SMART目标制定原则，定期回顾和调整目标，增强对目标的承诺感。";
+                } else if (percentage >= 50) {
+                    return "从短期目标开始练习，每完成一个小目标就给予自己奖励，逐步建立目标达成的信心和习惯。";
+                } else {
+                    return "尝试找到自己真正感兴趣的方向，设定简单易达成的目标，体验目标达成带来的成就感。";
+                }
+            } else if (dimensionName === "计划与执行") {
+                if (percentage >= 85) {
+                    return "您已经具备优秀的计划与执行能力，可以尝试更复杂项目的规划与管理，或指导他人提升这方面能力。";
+                } else if (percentage >= 70) {
+                    return "学习更高效的时间管理方法，如番茄工作法，提高任务完成的效率和质量。";
+                } else if (percentage >= 50) {
+                    return "建立每日/每周计划表，养成按计划行事的习惯，逐步提高任务完成率。";
+                } else {
+                    return "从简单的日常计划开始，培养按时完成的习惯，逐步增加计划的复杂度和挑战性。";
+                }
+            } else if (dimensionName === "成长与适应") {
+                if (percentage >= 85) {
+                    return "您具有很强的成长型思维，继续保持开放心态，尝试跨领域学习，拓展能力边界。";
+                } else if (percentage >= 70) {
+                    return "加强反思习惯，定期总结经验和教训，尝试走出舒适区，接受适度挑战。";
+                } else if (percentage >= 50) {
+                    return "培养面对错误的勇气，学习从失败中汲取经验，逐步建立成长型思维模式。";
+                } else {
+                    return "从小改变开始，尝试新事物，培养适应性，学习积极应对挫折的方法。";
+                }
+            }
+        }
+        
+        // 初始化班级分析图表
+        document.addEventListener('DOMContentLoaded', function() {
+            // 班级分数分布图
+            const classScoreCtx = document.getElementById('class-score-distribution').getContext('2d');
+            new Chart(classScoreCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['10-15', '16-20', '21-25', '26-30', '31-35', '36-40'],
+                    datasets: [{
+                        label: '学生人数',
+                        data: [2, 5, 12, 15, 8, 3],
+                        backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                        borderColor: 'rgba(52, 152, 219, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '学生人数'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '分数区间'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '班级分数分布',
+                            font: {
+                                size: 16
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // 班级维度对比图
+            const classDimensionCtx = document.getElementById('class-dimension-comparison').getContext('2d');
+            new Chart(classDimensionCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['目标与信念', '计划与执行', '成长与适应'],
+                    datasets: [{
+                        label: '班级平均分',
+                        data: [2.8, 3.1, 2.9],
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(153, 102, 255, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 4,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '班级各维度平均分',
+                            font: {
+                                size: 16
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // 班级问题分析图
+            const classQuestionCtx = document.getElementById('class-question-analysis').getContext('2d');
+            new Chart(classQuestionCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['问题1', '问题2', '问题3', '问题4', '问题5', '问题6', '问题7', '问题8', '问题9', '问题10'],
+                    datasets: [{
+                        label: '班级平均分',
+                        data: [3.2, 2.8, 2.9, 3.1, 2.7, 3.0, 3.3, 2.9, 2.8, 3.1],
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(54, 162, 235, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 4,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '各问题班级平均分',
+                            font: {
+                                size: 16
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
